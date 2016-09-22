@@ -62,19 +62,19 @@ def log10Dist(lowerBound, upperBound):
 
 '''Mass Distribution functions'''
 
-# Draw a mass from a uniform mass distribution
-def uniformMass(lowerBound, upperBound):
-    massSample = np.random.uniform(lowerBound, upperBound)
-    return massSample
+# Parse a Uniform Distribution from distributions.py to simple numpy array
+def parseUniformDistr(numpyDumpy, num_injections):
+    array1 = np.ndarray(shape=(num_injections), dtype=float)
+    for i in range(0,num_injections):
+        array1[i]=numpyDumpy[i][0]
+    return array1
 
-# Draw a mass from a normal mass distribution with upper and lower bounds
-def gaussMass(lowerBound, upperBound, mean, stdev):
-    massSample = np.random.normal(mean, stdev)
-
-    while massSample < lowerBound or massSample > upperBound :
-          massSample = np.random.normal(mean, stdev)
-
-    return massSample
+# Parse a Gaussian Distribution from distributions.py to a simple numpy array
+def parseGaussDistr(numpyDumpy, num_injections):
+    array1 = np.ndarray(shape=(num_injections), dtype=float)
+    for i in range(0,num_injections):
+        array1[i]=numpyDumpy[i][0]
+    return array1
 
 '''Spin Distribution functions'''
 
@@ -215,32 +215,36 @@ injDict = defaultdict(list)
 # Mass 1
 if opts.mass1_uniform == True:
    mBounds1 = distr.Uniform(mass1=(opts.min_mass1,opts.max_mass1))
-   injDict['mass1'] = mBounds1.rvs(size=opts.num_injections)
+   injDict['mass1'] = parseUniformDistr(mBounds1.rvs(size=opts.num_injections),
+                                        opts.num_injections)
 else :
 #   mBounds1 = distr.Gaussian('mass1',opts.min_mass1,opts.max_mass1,
 #                             opts.mean_mass1, opts.stdev_mass1**2)
    mBounds1 = distr.Gaussian(['mass1'],[opts.min_mass1],[opts.max_mass1],
                             [opts.mean_mass1],[opts.stdev_mass1**2])
-   injDict['mass1'] = mBounds1.rvs(size=opts.num_injections)
+   injDict['mass1'] = parseGaussDistr(mBounds1.rvs(size=opts.num_injections),
+                                      opts.num_injections)
 
 logging.info('Mass 1 parameters written.')
 
 # Mass 2
 if opts.mass2_uniform == True:
    mBounds2 = distr.Uniform(mass2=(opts.min_mass2,opts.max_mass2))
-   injDict['mass2'] = mBounds2.rvs(size=opts.num_injections)
+   injDict['mass2'] = parseUniformDistr(mBounds2.rvs(size=opts.num_injections),
+                                        opts.num_injections)
 else :
 #   mBounds2 = distr.Gaussian(mass1=(opts.min_mass2,opts.max_mass2,
 #                             opts.mean_mass2, opts.stdev_mass2**2))
    mBounds2 = distr.Gaussian(['mass2'],[opts.min_mass2],[opts.max_mass2],
                             [opts.mean_mass2],[opts.stdev_mass2**2])
-   injDict['mass2'] = mBounds2.rvs(size=opts.num_injections)
+   injDict['mass2'] = parseGaussDistr(mBounds2.rvs(size=opts.num_injections),
+                                      opts.num_injections)
 
 logging.info('Mass 2 parameters written.')
 # Spin 1
-spin1x = np.ndarray(shape=(1,opts.num_injections), dtype=float)
-spin1y = np.ndarray(shape=(1,opts.num_injections), dtype=float)
-spin1z = np.ndarray(shape=(1,opts.num_injections), dtype=float)
+spin1x = np.ndarray(shape=(opts.num_injections), dtype=float)
+spin1y = np.ndarray(shape=(opts.num_injections), dtype=float)
+spin1z = np.ndarray(shape=(opts.num_injections), dtype=float)
 
 for i in range(0, opts.num_injections):
     spinDistr1 = distr.Uniform(spin1=(opts.min_spin1, opts.max_spin1))
@@ -253,9 +257,9 @@ for i in range(0, opts.num_injections):
           s1y = spinDistr1.rvs(size=1)[0][0]
           s1z = spinDistr1.rvs(size=1)[0][0] 
     
-    spin1x[0][i] = s1x
-    spin1y[0][i] = s1y
-    spin1z[0][i] = s1z
+    spin1x[i] = s1x
+    spin1y[i] = s1y
+    spin1z[i] = s1z
 
 injDict['spin1x'] = spin1x
 injDict['spin1y'] = spin1y
@@ -264,9 +268,9 @@ injDict['spin1z'] = spin1z
 logging.info('Spin 1 parameters written.')
 
 # Spin 2
-spin2x = np.ndarray(shape=(1,opts.num_injections), dtype=float)
-spin2y = np.ndarray(shape=(1,opts.num_injections), dtype=float)
-spin2z = np.ndarray(shape=(1,opts.num_injections), dtype=float)
+spin2x = np.ndarray(shape=(opts.num_injections), dtype=float)
+spin2y = np.ndarray(shape=(opts.num_injections), dtype=float)
+spin2z = np.ndarray(shape=(opts.num_injections), dtype=float)
 
 for i in range(0, opts.num_injections):
     spinDistr2 = distr.Uniform(spin2=(opts.min_spin2, opts.max_spin2))
@@ -279,88 +283,15 @@ for i in range(0, opts.num_injections):
           s2y = spinDistr2.rvs(size=1)[0][0]
           s2z = spinDistr2.rvs(size=1)[0][0]                 
 
-    spin2x[0][i] = s2x
-    spin2y[0][i] = s2y
-    spin2z[0][i] = s2z
+    spin2x[i] = s2x
+    spin2y[i] = s2y
+    spin2z[i] = s2z
 
 injDict['spin2x'] = spin2x
 injDict['spin2y'] = spin2y
 injDict['spin2z'] = spin2z
 
 logging.info('Spin 2 parameters written.')
-
-"""
-for i in range(0, opts.num_injections):
-     if opts.mass1_uniform == True:
-        m1 = uniformMass(opts.min_mass1, opts.max_mass2)
-    
-     else :
-        m1 = gaussMass(opts.min_mass1, opts.max_mass1, opts.mean_mass1,
-                       opts.stdev_mass1)
-
-     if opts.mass2_uniform == True:
-        m2 = uniformMass(opts.min_mass2, opts.max_mass2)
-
-     else : 
-        m2 = gaussMass(opts.min_mass2, opts.max_mass2, opts.mean_mass2,
-                       opts.stdev_mass2)
-
-     if i % (opts.num_injections/10) == 0:
-        logging.info('%s'+'0%% done', fracDone)
-        fracDone+=1
-
-     s1a = uniformSpin(opts.min_spin1, opts.max_spin1)
-     s1b = uniformSpin(opts.min_spin1, opts.max_spin1)
-     s1c = uniformSpin(opts.min_spin1, opts.max_spin1)
-
-     s2a = uniformSpin(opts.min_spin2, opts.max_spin2)
-     s2b = uniformSpin(opts.min_spin2, opts.max_spin2)
-     s2c = uniformSpin(opts.min_spin2, opts.max_spin2)
-
-     while checkSpinMagBig(s1a,s1b,s1c) == True:
-            s1a = uniformSpin(opts.min_spin1, opts.max_spin1)
-            s1b = uniformSpin(opts.min_spin1, opts.max_spin1)
-            s1c = uniformSpin(opts.min_spin1, opts.max_spin1)
-"""
-"""
-     while checkSpinMagBig(s2a,s2b,s2c) == True:
-            s2a = uniformSpin(opts.min_spin2, opts.max_spin2)
-            s2b = uniformSpin(opts.min_spin2, opts.max_spin2)
-            s2c = uniformSpin(opts.min_spin2, opts.max_spin2)
-     string1 = str(m1) + ', ' + str(m2) + ', ' + str(s1a) + ', ' + str(s1b) \
-               + ', ' + str(s1c) +  ', ' + str(s2a) + ', ' + str(s2b) + ', ' \
-               + str(s2c) +'\n'
- 
-     file1.write(string1)
-"""
-
-# Print injDict
-#print injDict
-# Write a header to the text file
-"""
-file1 =  open(opts.output,'w') 
-
-string1=""
-for i in range(0, len(injDict.keys())):
-    string1+=str(injDict[i])
-    if i!= len(injDict.keys())-1 :
-       string1 += ', '
-string1 += '\n'
-file1.write(string1)
-
-for i in range(0, len(injDict.keys())):
-      string1 = ""
-      for j in range(0,opts.num_injections):
-            string1 += str(injDict[i][j])
-            if j != opts.num_injections - 1:
-               string1 += ', '
-      string1 += '\n'
-      file1.write(string1)
-"""
-
-print 'trial'
-print injDict['mass1'][0]
-print
 
 print 'mass1'
 print type(injDict['mass1'])
@@ -370,10 +301,6 @@ print
 print 'mass2'
 print type(injDict['mass2'])
 print injDict['mass2']
-
-print
-print 'trial2'
-print injDict['mass2'][0]
 
 print
 print 'spin1x'
@@ -411,13 +338,3 @@ with open(opts.output, "wb") as outfile:
    writer.writerows(zip(*injDict.values()))
     
 logging.info('100% done')
-
-# Write to a CSV file
-#json.dump(injDict, file1)
-#writing
-#with open(opts.output, 'w') as file1:
-#    writer = csv.writer(file1)    
-#    for k,v in injDict.iteritems():
-#        writer.writerow([k] + v)
-
-#file1.close()
