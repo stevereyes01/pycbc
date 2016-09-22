@@ -5,10 +5,10 @@ import numpy as np
 
 #plt.figure()
 n_bins = 20
-data = np.genfromtxt('test1.txt', delimiter =', ',names=['m1','m2','s1a','s1b','s1c','s2a','s2b','s2c'])
+data = np.genfromtxt('test1.csv', delimiter =',',names=True)
 
-a = data['m1']
-b = data['m2']
+a = data['mass1']
+b = data['mass2']
 
 fig, axes = plt.subplots(nrows=1, ncols=2)
 ax0, ax1 = axes.flat
