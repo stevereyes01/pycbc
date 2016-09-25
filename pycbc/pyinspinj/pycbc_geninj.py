@@ -381,6 +381,23 @@ else:
 
 logging.info('Distance parameters written.')
 
+# Draw the sky location of a binary (Right Ascension first)
+# (Declination second)
+# In radians!
+
+ra = np.ndarray(shape=(opts.num_injections), dtype=float)
+dec = np.ndarray(shape=(opts.num_injections), dtype=float)
+
+# Sampling dec in -pi/2 to pi/2 gives a uniform
+# distribution over S2 surface of sphere. Sampling
+# from 0 to pi gives bunching at the poles.
+for i in range(0,opts.num_injections):
+    ra[i] = 2*np.pi*np.random.uniform(0, 1)
+    dec[i] = np.arccos(2*np.random.uniform(0, 1)-1)
+
+injDict['ra'] = ra
+injDict['dec'] = dec
+
 # Draw the GPS times for each injection
 
 deltaT = opts.gps_end_time - opts.gps_start_time
