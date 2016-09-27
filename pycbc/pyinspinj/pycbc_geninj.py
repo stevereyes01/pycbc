@@ -71,21 +71,28 @@ def log10Dist(lowerBound, upperBound, num_injections):
 # Sampling dec in -pi/2 to pi/2 gives a uniform
 # distribution over S2 surface of sphere. Sampling
 # from 0 to pi gives bunching at the poles.
+# See: 
+
 def uniformRA(num_injections):
-    ra = np.ndarray(shape=(opts.num_injections), dtype=float)
+    ra = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
         ra[i] = 2*np.pi*np.random.uniform(0, 1)
     return ra
 
 def uniformDec(num_injections):
-    dec = np.ndarray(shape=(opts.num_injections), dtype=float)
-    for i in range(0,opts.num_injections):
+    dec = np.ndarray(shape=(num_injections), dtype=float)
+    for i in range(0,num_injections):
         dec[i] = np.arccos(2*np.random.uniform(0, 1)-1)
     return dec
 
 # Draw a polarization for the binary
 
-# Draw an inclination for the binary
+# Draw an inclination angle relative to the line of sight
+def uniformIncAngle(num_injections):
+    incAng = np.ndarray(shape=(num_injections), dtype=float)
+    for i in range(0,num_injections):
+        incAng[i] = 2*np.pi*np.random.uniform(0,1) 
+    return incAng
 
 # Draw a coalescence phase for the binary
 
@@ -265,8 +272,8 @@ if opts.mass1_uniform == True:
    injDict['mass1'] = parseUniformDistr(mBounds1.rvs(size=opts.num_injections),
                                         opts.num_injections)
 else :
-   mBounds1 = distr.Gaussian('mass1',opts.min_mass1,opts.max_mass1,
-                             opts.mean_mass1, opts.stdev_mass1**2)
+   mBounds1 = distr.Gaussian(mass1=(opts.min_mass1,opts.max_mass1,
+                             opts.mean_mass1, opts.stdev_mass1**2))
    injDict['mass1'] = parseGaussDistr(mBounds1.rvs(size=opts.num_injections),
                                       opts.num_injections)
 
@@ -407,6 +414,13 @@ injDict['time'] = uniformTime(opts.gps_start_time, opts.gps_end_time,
 
 logging.info('Time stamps for injections written.')
 
+# Draw a random inclination of the binary to the line of sight
+# between 0 and 2 pi
+
+injDict['inclination'] = uniformIncAngle(opts.num_injections)
+logging.info('Inclination angle written.')
+
+# Write the injection dictionary to file
 with open(opts.output, "wb") as outfile:
    writer = csv.writer(outfile)
    writer.writerow(injDict.keys())
