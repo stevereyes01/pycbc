@@ -13,8 +13,13 @@ import csv
 '''GPS and Time functions'''
 
 # Draw an injection time between GPS START and GPS END 
+def uniformTime(lowerBound, upperBound, num_injections):
+    deltaT = opts.gps_end_time - opts.gps_start_time
 
-
+    time = np.ndarray(shape=(opts.num_injections), dtype=int)
+    for i in range(0, opts.num_injections):
+        time[i] = np.random.uniform(opts.gps_start_time, opts.gps_end_time)
+    return time
 # Draw an injection time at specified step interval between GPS START & END
 
 '''Source Distribution functions'''
@@ -63,9 +68,21 @@ def log10Dist(lowerBound, upperBound, num_injections):
 # Draw a distance uniform in Chirp Distance
 
 # Draw a sky location for the binary
-#def uniformTheta(lowerBound, upperBound):
+# Sampling dec in -pi/2 to pi/2 gives a uniform
+# distribution over S2 surface of sphere. Sampling
+# from 0 to pi gives bunching at the poles.
+def uniformRA(num_injections):
+    ra = np.ndarray(shape=(opts.num_injections), dtype=float)
+    for i in range(0,num_injections):
+        ra[i] = 2*np.pi*np.random.uniform(0, 1)
+    return ra
 
-#def uniformPhi(lowerBound, upperBound):
+def uniformDec(num_injections):
+    dec = np.ndarray(shape=(opts.num_injections), dtype=float)
+    for i in range(0,opts.num_injections):
+        dec[i] = np.arccos(2*np.random.uniform(0, 1)-1)
+    return dec
+
 # Draw a polarization for the binary
 
 # Draw an inclination for the binary
@@ -91,9 +108,9 @@ def parseGaussDistr(numpyDumpy, num_injections):
 '''Spin Distribution functions'''
 
 # Draw a random spin from a uniform spin distribution
-def uniformSpin(lowerBound, upperBound):
-    spinSample = np.random.uniform(lowerBound, upperBound)
-    return spinSample
+#def uniformSpin(lowerBound, upperBound):
+#    spinSample = np.random.uniform(lowerBound, upperBound)
+#    return spinSample
 
 # Check that the spin magnitude is less than 1
 def checkSpinMagBig(spin1, spin2, spin3):
@@ -248,10 +265,8 @@ if opts.mass1_uniform == True:
    injDict['mass1'] = parseUniformDistr(mBounds1.rvs(size=opts.num_injections),
                                         opts.num_injections)
 else :
-#   mBounds1 = distr.Gaussian('mass1',opts.min_mass1,opts.max_mass1,
-#                             opts.mean_mass1, opts.stdev_mass1**2)
-   mBounds1 = distr.Gaussian(['mass1'],[opts.min_mass1],[opts.max_mass1],
-                            [opts.mean_mass1],[opts.stdev_mass1**2])
+   mBounds1 = distr.Gaussian('mass1',opts.min_mass1,opts.max_mass1,
+                             opts.mean_mass1, opts.stdev_mass1**2)
    injDict['mass1'] = parseGaussDistr(mBounds1.rvs(size=opts.num_injections),
                                       opts.num_injections)
 
@@ -263,10 +278,8 @@ if opts.mass2_uniform == True:
    injDict['mass2'] = parseUniformDistr(mBounds2.rvs(size=opts.num_injections),
                                         opts.num_injections)
 else :
-#   mBounds2 = distr.Gaussian(mass1=(opts.min_mass2,opts.max_mass2,
-#                             opts.mean_mass2, opts.stdev_mass2**2))
-   mBounds2 = distr.Gaussian(['mass2'],[opts.min_mass2],[opts.max_mass2],
-                            [opts.mean_mass2],[opts.stdev_mass2**2])
+   mBounds2 = distr.Gaussian(mass2=(opts.min_mass2,opts.max_mass2,
+                             opts.mean_mass2, opts.stdev_mass2**2))
    injDict['mass2'] = parseGaussDistr(mBounds2.rvs(size=opts.num_injections),
                                       opts.num_injections)
 
@@ -289,14 +302,13 @@ injDict['eta'] = (injDict['mass1']*injDict['mass2']) / \
 logging.info('Eta written.')
 
 # q mass ratio (Convention: write it as bigger mass divided by smaller mass!)
-
 for i in range(0,opts.num_injections):
     if injDict['mass1'][i] > injDict['mass2'][i]:
        injDict['q'].append(injDict['mass1'][i]/injDict['mass2'][i])
     else:
        injDict['q'].append(injDict['mass2'][i]/injDict['mass1'][i])
-    if injDict['q'][i] < 1.0:
-       print 'Q is too small!'
+
+logging.info('Mass ratio written')
 
 # Spin 1
 spin1x = np.ndarray(shape=(opts.num_injections), dtype=float)
@@ -373,7 +385,6 @@ elif opts.dist_distr == 'uniformLog10':
     injDict['distance'] = log10Dist(opts.dist_min, opts.dist_max,
                                     opts.num_injections)
 
-# Throw an error if the input doesn't look good
 else:
     raise ValueError('Unrecognized distance distribution! Could not find %s.' \
                      'Please try uniform, uniformArea, uniformVolume, or ' \
@@ -385,27 +396,14 @@ logging.info('Distance parameters written.')
 # (Declination second)
 # In radians!
 
-ra = np.ndarray(shape=(opts.num_injections), dtype=float)
-dec = np.ndarray(shape=(opts.num_injections), dtype=float)
-
-# Sampling dec in -pi/2 to pi/2 gives a uniform
-# distribution over S2 surface of sphere. Sampling
-# from 0 to pi gives bunching at the poles.
-for i in range(0,opts.num_injections):
-    ra[i] = 2*np.pi*np.random.uniform(0, 1)
-    dec[i] = np.arccos(2*np.random.uniform(0, 1)-1)
-
-injDict['ra'] = ra
-injDict['dec'] = dec
+injDict['ra'] = uniformRA(opts.num_injections)
+injDict['dec'] = uniformDec(opts.num_injections)
+logging.info('RA and Dec written.')
 
 # Draw the GPS times for each injection
 
-deltaT = opts.gps_end_time - opts.gps_start_time
-
-time = np.ndarray(shape=(opts.num_injections), dtype=int)
-for i in range(0, opts.num_injections):
-    time [i] = np.random.uniform(opts.gps_start_time, opts.gps_end_time)
-injDict['time'] = time
+injDict['time'] = uniformTime(opts.gps_start_time, opts.gps_end_time,
+                              opts.num_injections)
 
 logging.info('Time stamps for injections written.')
 
