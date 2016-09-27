@@ -71,27 +71,33 @@ def log10Dist(lowerBound, upperBound, num_injections):
 # Sampling dec in -pi/2 to pi/2 gives a uniform
 # distribution over S2 surface of sphere. Sampling
 # from 0 to pi gives bunching at the poles.
-# See: 
+# See: http://mathworld.wolfram.com/SpherePointPicking.html 
 
 def uniformRA(num_injections):
     ra = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
-        ra[i] = 2*np.pi*np.random.uniform(0, 1)
+        ra[i] = 2*np.pi*np.random.uniform(0,1)
     return ra
 
 def uniformDec(num_injections):
     dec = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
-        dec[i] = np.arccos(2*np.random.uniform(0, 1)-1)
+        dec[i] = np.arccos(2*np.random.uniform(0,1)-1)
     return dec
 
 # Draw a polarization for the binary
-
+def uniformPolariAngle(num_injections):
+    psi = np.ndarray(shape=(num_injections), dtype=float)
+    for i in range(0,num_injections):
+        psi[i] = 2*np.pi*np.random.uniform(0,1)
+    return psi
+ 
 # Draw an inclination angle relative to the line of sight
+# -pi/2 to pi/2
 def uniformIncAngle(num_injections):
     incAng = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
-        incAng[i] = 2*np.pi*np.random.uniform(0,1) 
+        incAng[i] = np.arccos(2*np.random.uniform(0,1)-1)
     return incAng
 
 # Draw a coalescence phase for the binary
@@ -100,24 +106,21 @@ def uniformIncAngle(num_injections):
 
 # Parse a Uniform Distribution from distributions.py to simple numpy array
 def parseUniformDistr(numpyDumpy, num_injections):
-    array1 = np.ndarray(shape=(num_injections), dtype=float)
+    mass = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
-        array1[i]=numpyDumpy[i][0]
-    return array1
+        mass[i]=numpyDumpy[i][0]
+    return mass
 
 # Parse a Gaussian Distribution from distributions.py to a simple numpy array
 def parseGaussDistr(numpyDumpy, num_injections):
-    array1 = np.ndarray(shape=(num_injections), dtype=float)
+    mass = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
-        array1[i]=numpyDumpy[i][0]
-    return array1
+        mass[i]=numpyDumpy[i][0]
+    return mass
 
 '''Spin Distribution functions'''
 
 # Draw a random spin from a uniform spin distribution
-#def uniformSpin(lowerBound, upperBound):
-#    spinSample = np.random.uniform(lowerBound, upperBound)
-#    return spinSample
 
 # Check that the spin magnitude is less than 1
 def checkSpinMagBig(spin1, spin2, spin3):
@@ -273,7 +276,7 @@ if opts.mass1_uniform == True:
                                         opts.num_injections)
 else :
    mBounds1 = distr.Gaussian(mass1=(opts.min_mass1,opts.max_mass1,
-                             opts.mean_mass1, opts.stdev_mass1**2))
+                             opts.mean_mass1,opts.stdev_mass1**2))
    injDict['mass1'] = parseGaussDistr(mBounds1.rvs(size=opts.num_injections),
                                       opts.num_injections)
 
@@ -415,10 +418,16 @@ injDict['time'] = uniformTime(opts.gps_start_time, opts.gps_end_time,
 logging.info('Time stamps for injections written.')
 
 # Draw a random inclination of the binary to the line of sight
-# between 0 and 2 pi
+# between -pi/2 and pi/2
 
 injDict['inclination'] = uniformIncAngle(opts.num_injections)
-logging.info('Inclination angle written.')
+logging.info('Inclination angles written.')
+
+# Draw a random polarization angle of the binary to the line of sight
+# between 0 and 2 pi
+
+injDict['polarization_angle'] = uniformPolariAngle(opts.num_injections)
+logging.info('Polarization angles written.')
 
 # Write the injection dictionary to file
 with open(opts.output, "wb") as outfile:
