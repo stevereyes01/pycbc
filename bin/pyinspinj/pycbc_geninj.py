@@ -6,9 +6,8 @@ import numpy as np
 import math
 from pycbc.inference import distributions as distr
 from collections import defaultdict
+import pycbc.pnutils as pnu
 import csv
-
-'''Functions for py_inspinj'''
 
 '''GPS and Time functions'''
 
@@ -53,7 +52,7 @@ def uniformVolume(lowerBound, upperBound, num_injections):
 
 # Draw a distance via uniform in log 10 distance (Mpc)
 def log10Dist(lowerBound, upperBound, num_injections):
-# Logarithms return NaN if you're at 0!
+    # Logarithms return NaN if you're at 0!
     if lowerBound <= 0:
        lowerBound = 0.000000000001
 
@@ -105,22 +104,20 @@ def uniformIncAngle(num_injections):
 '''Mass Distribution functions'''
 
 # Parse a Uniform Distribution from distributions.py to simple numpy array
-def parseUniformDistr(numpyDumpy, num_injections):
+def parseUniformDistr(collinArray, num_injections):
     mass = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
-        mass[i]=numpyDumpy[i][0]
+        mass[i] = collinArray[i][0]
     return mass
 
 # Parse a Gaussian Distribution from distributions.py to a simple numpy array
-def parseGaussDistr(numpyDumpy, num_injections):
+def parseGaussDistr(collinArray, num_injections):
     mass = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
-        mass[i]=numpyDumpy[i][0]
+        mass[i] = collinArray[i][0]
     return mass
 
 '''Spin Distribution functions'''
-
-# Draw a random spin from a uniform spin distribution
 
 # Check that the spin magnitude is less than 1
 def checkSpinMagBig(spin1, spin2, spin3):
@@ -131,11 +128,9 @@ def checkSpinMagBig(spin1, spin2, spin3):
    
     return True
 
-'''Tapering Injected Waveform functions'''
-
-
-parser = argparse.ArgumentParser(description='A mock up of lalapps_inspinj' \
-                                             'for Python.')
+parser = argparse.ArgumentParser(description='A Python code for generating ' \
+                                             'a astrophysical population of ' \
+                                             'compact binaries.')
 # GPS Inputs and Time Options
 parser.add_argument('--gps-start-time', type=float, required=False, default=0,
                      help='Optional: A beginning GPS time where the injection' \
@@ -148,15 +143,6 @@ parser.add_argument('--time-step', type=float, required=False,
                      default=2630/math.pi, help='Optional: Sets the interval' \
                     ' at which injections will uniformly be distributed' \
                     ' across (default: 2630/pi)')
-
-# Detector PSD Inputs
-#parser.add_arguments('--L1-PSD', type, required=True,
-#                      help='Required: A Power Spectral Density Ascii text' \
-#                           ' file for the Livingston detector.')
-
-#parser.add_arguments('--H1-PSD', type, required=True,
-#                      help='Required: A Power Spectral Density Ascii txt' \
-#                           ' file for the Hanford detector.')
 
 # Source Distribution Options
 parser.add_argument('--num-injections', type=int, required=False, default=10000,
@@ -179,10 +165,6 @@ parser.add_argument('--dist-max', type=float, required=False, default=1000,
 parser.add_argument('--dist-min', type=float, required=False, default=0,
                     help='Optional: Choose the minimum distance of ' \
                          'injections in Mpc. (default: 0)')
-
-#parser.add_argument(RIGHT ASCENSION BOUNDS)
-
-#parser.add_argument(DECLINATION BOUNDS)
 
 # Mass Distribution Options
 parser.add_argument('--min-mass1', type=float, required=False, default=1.0,
@@ -226,20 +208,67 @@ parser.add_argument('--mass2-uniform', type=int, required=False, default=0,
                           ' (default:0, False)')
 
 # Spin Distribution Options
-parser.add_argument('--min-spin1', type=float, required=False, default=-1.0,
-                     help='Optional: Minimum spin for spin1 (default:-1.0)')
+parser.add_argument('--min-spin1', type=float, required=False, default=0.0,
+                     help='Optional: Minimum spin magnitude for spin1' \
+                          ' (default:0.0)')
 
 parser.add_argument('--max-spin1', type=float, required=False, default=1.0,
-                     help='Optional: Maximum spin for spin1 (default:1.0)')
+                     help='Optional: Maximum spin magnitude for spin1' \
+                          ' (default:1.0)')
 
-parser.add_argument('--min-spin2', type=float, required=False, default=-1.0,
-                     help='Optional: Minimum spin for spin2 (default:-1.0)')
+parser.add_argument('--min-spin1-theta', type=float, required=False,
+                     default=-np.pi/2.,help='Optional: Minimum angle to' \
+                                            ' place the spin vector angle.' \
+                                            ' Angle is relative to the' \
+                                            ' azimuth (-pi/2 to pi/2).')
+                                           
+parser.add_argument('--max-spin1-theta', type=float, required=False,
+                     default=np.pi/2.,help='Optional: Maximum angle to' \
+                                           ' place the spin vector angle.' \
+                                           ' Angle is relative to the' \
+                                           ' azimuth (-pi/2 to pi/2).')
+
+parser.add_argument('--min-spin1-phi', type=float, required=False, 
+                     default=0.,help='Optional: Minimum angle to place the' \
+                                     ' spin vector angle. Angle is in the' \
+                                     ' x-y plane (0 to 2pi) (default:0)') 
+                                            
+parser.add_argument('--max-spin1-phi', type=float, required=False,  
+                     default=2.*np.pi., help='Optional: Maximum angle to place' \
+                                            ' the spin vector angle. Angle is' \
+                                            ' x-y plane (0 to 2pi)' \
+                                            ' (default:2pi)')
+
+parser.add_argument('--min-spin2', type=float, required=False, default=0.0,
+                     help='Optional: Minimum spin magnitude for spin2' \
+                          ' (default:0.0)')
 
 parser.add_argument('--max-spin2', type=float, required=False, default=1.0,
-                     help='Optional: Maximum spin for spin2 (default:1.0)')
+                     help='Optional: Maximum spin magnitude for spin2' \
+                          ' (default:1.0)')
 
-# Tapering the Injected Waveform
-# ?????
+parser.add_argument('--min-spin2-theta', type=float, required=False, 
+                     default=-np.pi/2.,help='Optional: Minimum angle to' \
+                                            ' place the spin vector angle.' \
+                                            ' Angle is relative to the' \
+                                            ' azimuth (-pi/2 to pi/2).')
+                                            
+parser.add_argument('--max-spin2-theta', type=float, required=False,
+                     default=np.pi/2.,help='Optional: Maximum angle to' \
+                                           ' place the spin vector angle.' \
+                                           ' Angle is relative to the' \
+                                           ' azimuth (-pi/2 to pi/2).')
+
+parser.add_argument('--min-spin2-phi', type=float, required=False,
+                     default=0.,help='Optional: Minimum angle to place the' \
+                                     ' spin vector angle. Angle is in the' \
+                                     ' x-y plane (0 to 2pi) (default:0)')
+                                            
+parser.add_argument('--max-spin2-phi', type=float, required=False,
+                     default=2.*np.pi., help='Optional: Maximum angle to place' \
+                                            ' the spin vector angle. Angle is' \
+                                            ' x-y plane (0 to 2pi)' \ 
+                                            ' (default:2pi)')
 
 # Output & Misc Options
 parser.add_argument('--seed', required=False, default=1,
@@ -300,14 +329,19 @@ injDict['mtotal'] = injDict['mass1'] + injDict['mass2']
 logging.info('Total mass written.')
 
 # MChirp = (m1*m2)**(3./5.) / (m1 + m2)**(1./5.)
-injDict['mchirp'] = ((injDict['mass1']*injDict['mass2'])**(3./5.)) / \
-                     ((injDict['mass1'] + injDict['mass2'])**(1./5.))
+injDict['mchirp'], _ = pnu.mass1_mass2_to_mchirp_eta(injDict['mass1'],
+                                                     injDict['mass2'])
+                                   
+#injDict['mchirp'] = ((injDict['mass1']*injDict['mass2'])**(3./5.)) / \
+#                     ((injDict['mass1'] + injDict['mass2'])**(1./5.))
 
 logging.info('Chirp mass written.')
 
-# Eta
-injDict['eta'] = (injDict['mass1']*injDict['mass2']) / \
-                 ((injDict['mass1'] + injDict['mass2'])**2)
+# Eta = (m1*m2)/(m1+m2)**2
+_, injDict['eta'] = pnu.mass1_mass2_to_mchirp_eta(injDict['mass1'],
+                                                  injDict['mass2'])
+#injDict['eta'] = (injDict['mass1']*injDict['mass2']) / \
+#                 ((injDict['mass1'] + injDict['mass2'])**2)
 
 logging.info('Eta written.')
 

@@ -31,4 +31,5 @@ ax4.set_title('Distribution of q')
 ax5.set_title('Distribution of q')
 
 plt.tight_layout()
-plt.savefig("/home/steven.reyes/public_html/ER10/py_inspinj/massDistr.png")
+#plt.savefig("/home/steven.reyes/public_html/ER10/py_inspinj/massDistr.png")
+plt.savefig("/home/steven.reyes/WWW/LSC/ER10/massDistr.png")
