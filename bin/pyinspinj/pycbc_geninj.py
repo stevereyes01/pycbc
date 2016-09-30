@@ -123,41 +123,31 @@ def parseGaussDistr(collinArray, num_injections):
 # Check that the spin magnitude is less than 1
 def drawSpinComponents(spin_mag_min, spin_mag_max, theta_min, theta_max,
                        phi_min, phi_max, num_injections):
-    spinx = np.ndarray(shape=(opts.num_injections), dtype=float)
-    spiny = np.ndarray(shape=(opts.num_injections), dtype=float)
-    spinz = np.ndarray(shape=(opts.num_injections), dtype=float)
-
+    # Distributions.py uses angles in units of pi so convert or units
     theta_low = theta_min / np.pi
     theta_high = theta_max / np.pi
 
-    phi_low = phi_min / (2*np.pi)
-    phi_high = phi_max / (2*np.pi)
+    phi_low = phi_min / np.pi
+    phi_high = phi_max / np.pi
 
+    spin_mag = np.ndarray(shape=(opts.num_injections), dtype=float)
+    theta = np.ndarray(shape=(opts.num_injections), dtype=float)
+    phi = np.ndarray(shape=(opts.num_injections), dtype=float)
+
+    # Grab a distribution of polar and azimuthal angles,
+    # polar between 0 and pi and azimuthal between 0 and 2pi
+    anglePair = distr.UniformSolidAngle(polar_bounds=(theta_low,theta_high),
+                                       azimuthal_bounds=(phi_low,phi_high))
+    angles = anglePair.rvs(size=num_injections)
+
+    # For some reason Collin's uniformSolidAngle inputs theta and phi but
+    # outputs tuples of phi and theta  
     for i in range(0, num_injections):
-       phi = 2*np.pi*np.random.uniform(theta_low,theta_high)
-       theta = np.arccos(2*np.random.uniform(phi_low,phi_high)-1)
-       spin_mag = np.random.uniform(spin_mag_min, spin_mag_max)       
+        spin_mag[i] = np.random.uniform(spin_mag_min, spin_mag_max)
+        phi[i] = angles[i][0]
+        theta[i] = angles[i][1]
 
-       sx = spin_mag*np.sin(theta)*np.cos(phi)
-       sy = spin_mag*np.sin(theta)*np.sin(phi)
-       sz = spin_mag*np.cos(theta)
-
-       ssq = sx**2 + sy**2 + sz**2
-       
-       while ssq > 1:
-            phi = 2*np.pi*np.random.uniform(theta_low,theta_high)
-            theta = np.arccos(2*np.random.uniform(phi_low,phi_high)-1)
-            spin_mag = np.random.uniform(spin_mag_min, spin_mag_max)
-            
-            sx = spin_mag*np.sin(theta)*np.cos(phi)
-            sy = spin_mag*np.sin(theta)*np.sin(phi)
-            sz = spin_mag*np.cos(theta)
-
-       spinx[i]=sx
-       spiny[i]=sy
-       spinz[i]=sz
- 
-    return spinx, spiny, spinz
+    return coord.spherical_to_cartesian(spin_mag, phi, theta)        
 
 parser = argparse.ArgumentParser(description='A Python code for generating ' \
                                              'a astrophysical population of ' \
@@ -279,13 +269,13 @@ parser.add_argument('--max-spin2', type=float, required=False, default=1.0,
                           ' (default:1.0)')
 
 parser.add_argument('--min-spin2-theta', type=float, required=False, 
-                     default=-np.pi/2.,help='Optional: Minimum angle to' \
+                     default=0,help='Optional: Minimum angle to' \
                                             ' place the spin vector angle.' \
                                             ' Angle is relative to the' \
                                             ' azimuth (-pi/2 to pi/2).')
                                             
 parser.add_argument('--max-spin2-theta', type=float, required=False,
-                     default=np.pi/2.,help='Optional: Maximum angle to' \
+                     default=np.pi,help='Optional: Maximum angle to' \
                                            ' place the spin vector angle.' \
                                            ' Angle is relative to the' \
                                            ' azimuth (-pi/2 to pi/2).')
@@ -383,7 +373,6 @@ for i in range(0,opts.num_injections):
 logging.info('Mass ratio written')
 
 # Spin 1
-
 injDict['spin1x'], injDict['spin1y'], injDict['spin1z'] = drawSpinComponents(
                                                           opts.min_spin1,
                                                           opts.max_spin1,
@@ -396,7 +385,6 @@ injDict['spin1x'], injDict['spin1y'], injDict['spin1z'] = drawSpinComponents(
 logging.info('Spin 1 parameters written.')
 
 # Spin 2
-
 injDict['spin2x'], injDict['spin2y'], injDict['spin2z'] = drawSpinComponents(
                                                           opts.min_spin2,
                                                           opts.max_spin2,
@@ -441,14 +429,12 @@ logging.info('Distance parameters written.')
 # Draw the sky location of a binary (Right Ascension first)
 # (Declination second)
 # In radians!
-
 injDict['ra'] = uniformRA(opts.num_injections)
 injDict['dec'] = uniformDec(opts.num_injections)
 
 logging.info('RA and Dec written.')
 
 # Draw the GPS times for each injection
-
 injDict['time'] = uniformTime(opts.gps_start_time, opts.gps_end_time,
                               opts.num_injections)
 
@@ -456,14 +442,12 @@ logging.info('Time stamps for injections written.')
 
 # Draw a random inclination of the binary to the line of sight
 # between -pi/2 and pi/2
-
 injDict['inclination'] = uniformIncAngle(opts.num_injections)
 
 logging.info('Inclination angles written.')
 
 # Draw a random polarization angle of the binary to the line of sight
 # between 0 and 2 pi
-
 injDict['polarization_angle'] = uniformPolariAngle(opts.num_injections)
 
 logging.info('Polarization angles written.')
