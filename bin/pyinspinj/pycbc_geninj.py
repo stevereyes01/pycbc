@@ -73,19 +73,19 @@ def log10Dist(lowerBound, upperBound, num_injections):
 # from 0 to pi gives bunching at the poles.
 # See: http://mathworld.wolfram.com/SpherePointPicking.html 
 
-def uniformRA(num_injections):
-    ra = np.ndarray(shape=(num_injections), dtype=float)
-    for i in range(0,num_injections):
-        ra[i] = np.arccos(2*np.random.uniform(0,1)-1)
-    return ra
-
 def uniformDec(num_injections):
     dec = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
-        dec[i] = 2*np.pi*np.random.uniform(0,1)
+        dec[i] = np.arccos(2*np.random.uniform(0,1)-1)
     return dec
 
-# Draw a polarization for the binary
+def uniformRA(num_injections):
+    ra = np.ndarray(shape=(num_injections), dtype=float)
+    for i in range(0,num_injections):
+        ra[i] = 2*np.pi*np.random.uniform(0,1)
+    return ra
+
+# Draw a polarization for the binary from 0 to pi
 def uniformPolariAngle(num_injections):
     psi = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
@@ -93,7 +93,7 @@ def uniformPolariAngle(num_injections):
     return psi
  
 # Draw an inclination angle relative to the line of sight
-# -pi/2 to pi/2
+# 0 to pi/2
 def uniformIncAngle(num_injections):
     incAng = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
