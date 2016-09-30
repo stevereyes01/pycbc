@@ -315,12 +315,17 @@ parser.add_argument('--verbose', action='store_true', help='Optional: Give a' \
 opts = parser.parse_args()
 
 # Logging information.
-log_fmt = '%(asctime)s %(message)s'
-log_date_fmt = '%Y-%m-%d %H:%M:%S'
-logging.basicConfig(level=logging.INFO, format=log_fmt, datefmt=log_date_fmt)
 
 if opts.verbose:
-    logging.info('Generating Injections...')
+    logging_level = logging.DEBUG
+else:
+    logging_level = logging.WARN
+
+log_fmt = '%(asctime)s %(message)s'
+log_date_fmt = '%Y-%m-%d %H:%M:%S'
+logging.basicConfig(level=logging_level, format=log_fmt, datefmt=log_date_fmt)
+
+logging.info('Generating Injections...')
 
 # Create a dictionary for all of the parameters of the injections
 
@@ -341,8 +346,7 @@ else :
    injDict['mass1'] = parseGaussDistr(mBounds1.rvs(size=opts.num_injections),
                                       opts.num_injections)
 
-if opts.verbose:
-    logging.info('Mass 1 parameters written.')
+logging.info('Mass 1 parameters written.')
 
 # Mass 2
 if opts.mass2_uniform == True:
@@ -355,33 +359,19 @@ else :
    injDict['mass2'] = parseGaussDistr(mBounds2.rvs(size=opts.num_injections),
                                       opts.num_injections)
 
-if opts.verbose:
-    logging.info('Mass 2 parameters written.')
+logging.info('Mass 2 parameters written.')
 
 # MTotal = m1 + m2
 injDict['mtotal'] = injDict['mass1'] + injDict['mass2']
 
-if opts.verbose:
-    logging.info('Total mass written.')
+logging.info('Total mass written.')
 
 # MChirp = (m1*m2)**(3./5.) / (m1 + m2)**(1./5.)
+# Eta = (m1*m2)/(m1+m2)**2
 injDict['mchirp'], injDict['eta'] = pnu.mass1_mass2_to_mchirp_eta(injDict['mass1'],
                                                      injDict['mass2'])
                                    
-#injDict['mchirp'] = ((injDict['mass1']*injDict['mass2'])**(3./5.)) / \
-#                     ((injDict['mass1'] + injDict['mass2'])**(1./5.))
-
-if opts.verbose:
-    logging.info('Chirp mass and Eta written.')
-
-# Eta = (m1*m2)/(m1+m2)**2
-_, injDict['eta'] = pnu.mass1_mass2_to_mchirp_eta(injDict['mass1'],
-                                                  injDict['mass2'])
-#injDict['eta'] = (injDict['mass1']*injDict['mass2']) / \
-#                 ((injDict['mass1'] + injDict['mass2'])**2)
-
-#if opts.verbose:
-#    logging.info('Eta written.')
+logging.info('Chirp mass and Eta written.')
 
 # q mass ratio (Convention: write it as bigger mass divided by smaller mass!)
 for i in range(0,opts.num_injections):
@@ -390,8 +380,7 @@ for i in range(0,opts.num_injections):
     else:
        injDict['q'].append(injDict['mass2'][i]/injDict['mass1'][i])
 
-if opts.verbose:
-    logging.info('Mass ratio written')
+logging.info('Mass ratio written')
 
 # Spin 1
 
@@ -404,8 +393,7 @@ injDict['spin1x'], injDict['spin1y'], injDict['spin1z'] = drawSpinComponents(
                                                           opts.max_spin1_phi,
                                                           opts.num_injections)
 
-if opts.verbose:
-    logging.info('Spin 1 parameters written.')
+logging.info('Spin 1 parameters written.')
 
 # Spin 2
 
@@ -418,8 +406,7 @@ injDict['spin2x'], injDict['spin2y'], injDict['spin2z'] = drawSpinComponents(
                                                           opts.max_spin2_phi,
                                                           opts.num_injections)
 
-if opts.verbose:
-    logging.info('Spin 2 parameters written.')
+logging.info('Spin 2 parameters written.')
 
 # Write the projection of the spin on the angular momentum axis
 # x1 = (c*vec{S1}/(G m1**2) dot vec-hat{L}
@@ -449,8 +436,7 @@ else:
                      'Please try uniform, uniformArea, uniformVolume, or ' \
                      'uniformLog10 distance distributions.' %(opts.dist_distr))
 
-if opts.verbose:
-    logging.info('Distance parameters written.')
+logging.info('Distance parameters written.')
 
 # Draw the sky location of a binary (Right Ascension first)
 # (Declination second)
@@ -459,38 +445,35 @@ if opts.verbose:
 injDict['ra'] = uniformRA(opts.num_injections)
 injDict['dec'] = uniformDec(opts.num_injections)
 
-if opts.verbose:
-    logging.info('RA and Dec written.')
+logging.info('RA and Dec written.')
 
 # Draw the GPS times for each injection
 
 injDict['time'] = uniformTime(opts.gps_start_time, opts.gps_end_time,
                               opts.num_injections)
 
-if opts.verbose:
-    logging.info('Time stamps for injections written.')
+logging.info('Time stamps for injections written.')
 
 # Draw a random inclination of the binary to the line of sight
 # between -pi/2 and pi/2
 
 injDict['inclination'] = uniformIncAngle(opts.num_injections)
 
-if opts.verbose:
-    logging.info('Inclination angles written.')
+logging.info('Inclination angles written.')
 
 # Draw a random polarization angle of the binary to the line of sight
 # between 0 and 2 pi
 
 injDict['polarization_angle'] = uniformPolariAngle(opts.num_injections)
 
-if opts.verbose:
-    logging.info('Polarization angles written.')
+logging.info('Polarization angles written.')
 
 # Write the injection dictionary to file
+logging.info('Writing to file.')
+
 with open(opts.output, "wb") as outfile:
    writer = csv.writer(outfile)
    writer.writerow(injDict.keys())
    writer.writerows(zip(*injDict.values()))
 
-if opts.verbose:    
-    logging.info('100% done')
+logging.info('100% done')
