@@ -8,6 +8,7 @@ from pycbc.inference import distributions as distr
 from collections import defaultdict
 import pycbc.pnutils as pnu
 import csv
+import pycbc.coordinates as coord
 
 '''GPS and Time functions'''
 
@@ -75,20 +76,20 @@ def log10Dist(lowerBound, upperBound, num_injections):
 def uniformRA(num_injections):
     ra = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
-        ra[i] = 2*np.pi*np.random.uniform(0,1)
+        ra[i] = np.arccos(2*np.random.uniform(0,1)-1)
     return ra
 
 def uniformDec(num_injections):
     dec = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
-        dec[i] = np.arccos(2*np.random.uniform(0,1)-1)
+        dec[i] = 2*np.pi*np.random.uniform(0,1)
     return dec
 
 # Draw a polarization for the binary
 def uniformPolariAngle(num_injections):
     psi = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
-        psi[i] = 2*np.pi*np.random.uniform(0,1)
+        psi[i] = 2.*np.pi*np.random.uniform(0.,1.)
     return psi
  
 # Draw an inclination angle relative to the line of sight
@@ -133,8 +134,8 @@ def drawSpinComponents(spin_mag_min, spin_mag_max, theta_min, theta_max,
     phi_high = phi_max / (2*np.pi)
 
     for i in range(0, num_injections):
-       theta = 2*np.pi*np.random.uniform(theta_low,theta_high)
-       phi = np.arccos(2*np.random.uniform(phi_low,phi_high)-1)
+       phi = 2*np.pi*np.random.uniform(theta_low,theta_high)
+       theta = np.arccos(2*np.random.uniform(phi_low,phi_high)-1)
        spin_mag = np.random.uniform(spin_mag_min, spin_mag_max)       
 
        sx = spin_mag*np.sin(theta)*np.cos(phi)
@@ -144,17 +145,17 @@ def drawSpinComponents(spin_mag_min, spin_mag_max, theta_min, theta_max,
        ssq = sx**2 + sy**2 + sz**2
        
        while ssq > 1:
-            theta = 2*np.pi*np.random.uniform(theta_low,theta_high)
-            phi = np.arccos(2*np.random.uniform(phi_low,phi_high)-1)
+            phi = 2*np.pi*np.random.uniform(theta_low,theta_high)
+            theta = np.arccos(2*np.random.uniform(phi_low,phi_high)-1)
             spin_mag = np.random.uniform(spin_mag_min, spin_mag_max)
             
             sx = spin_mag*np.sin(theta)*np.cos(phi)
             sy = spin_mag*np.sin(theta)*np.sin(phi)
             sz = spin_mag*np.cos(theta)
 
-       spinx.append(sx)
-       spiny.append(sy)
-       spinz.append(sz)
+       spinx[i]=sx
+       spiny[i]=sy
+       spinz[i]=sz
  
     return spinx, spiny, spinz
 
@@ -264,7 +265,7 @@ parser.add_argument('--min-spin1-phi', type=float, required=False,
                                      ' x-y plane (0 to 2pi) (default:0)') 
                                             
 parser.add_argument('--max-spin1-phi', type=float, required=False,  
-                     default=2.*np.pi., help='Optional: Maximum angle to place' \
+                     default=2.*np.pi, help='Optional: Maximum angle to place' \
                                             ' the spin vector angle. Angle is' \
                                             ' x-y plane (0 to 2pi)' \
                                             ' (default:2pi)')
@@ -295,9 +296,9 @@ parser.add_argument('--min-spin2-phi', type=float, required=False,
                                      ' x-y plane (0 to 2pi) (default:0)')
                                             
 parser.add_argument('--max-spin2-phi', type=float, required=False,
-                     default=2.*np.pi., help='Optional: Maximum angle to place' \
+                     default=2.*np.pi, help='Optional: Maximum angle to place' \
                                             ' the spin vector angle. Angle is' \
-                                            ' x-y plane (0 to 2pi)' \ 
+                                            ' x-y plane (0 to 2pi)' \
                                             ' (default:2pi)')
 
 # Output & Misc Options
@@ -400,7 +401,8 @@ injDict['spin1x'], injDict['spin1y'], injDict['spin1z'] = drawSpinComponents(
                                                           opts.min_spin1_theta,
                                                           opts.max_spin1_theta,
                                                           opts.min_spin1_phi,
-                                                          opts.max_spin1_phi)
+                                                          opts.max_spin1_phi,
+                                                          opts.num_injections)
 
 if opts.verbose:
     logging.info('Spin 1 parameters written.')
@@ -413,7 +415,8 @@ injDict['spin2x'], injDict['spin2y'], injDict['spin2z'] = drawSpinComponents(
                                                           opts.min_spin2_theta,
                                                           opts.max_spin2_theta,
                                                           opts.min_spin2_phi,
-                                                          opts.max_spin2_phi)
+                                                          opts.max_spin2_phi,
+                                                          opts.num_injections)
 
 if opts.verbose:
     logging.info('Spin 2 parameters written.')
