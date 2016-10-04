@@ -68,9 +68,9 @@ def log10Dist(lowerBound, upperBound, num_injections):
 # Draw a distance uniform in Chirp Distance
 
 # Draw a sky location for the binary
-# Sampling dec in -pi/2 to pi/2 gives a uniform
+# Sampling dec in cos 0 to cos pi gives a uniform
 # distribution over S2 surface of sphere. Sampling
-# from 0 to pi gives bunching at the poles.
+# from 0 to 2pi in ra.
 # See: http://mathworld.wolfram.com/SpherePointPicking.html 
 
 def uniformDec(num_injections):
@@ -93,7 +93,7 @@ def uniformPolariAngle(num_injections):
     return psi
  
 # Draw an inclination angle relative to the line of sight
-# 0 to pi/2
+# 0 to pi
 def uniformIncAngle(num_injections):
     incAng = np.ndarray(shape=(num_injections), dtype=float)
     for i in range(0,num_injections):
