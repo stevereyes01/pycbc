@@ -4,21 +4,34 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-n_bins = 20
-data = np.genfromtxt('test1.txt', delimiter =', ',names=['m1','m2','s1a','s1b','s1c','s2a','s2b','s2c'])
+n_bins = 25
+data = np.genfromtxt('test1.csv', delimiter =',',names=True)
 
-c = data['s1a']
-d = data['s1b']
-e = data['s1c']
-f = data['s2a']
-g = data['s2b']
-h = data['s2c']
+c = data['spin1x']
+d = data['spin1y']
+e = data['spin1z']
+f = data['spin2x']
+g = data['spin2y']
+h = data['spin2z']
 
 s1=[]
 s2=[]
-for i in range(0,len(data['s1a'])):
+
+file1 = open('spin1.txt', 'w')
+file2 = open('spin2.txt', 'w')
+
+for i in range(0,len(data['spin1x'])):
+    string1 = str(c[i]) + ' ' + str(d[i]) + ' ' + str(e[i]) + '\n'
+    string2 = str(f[i]) + ' ' + str(g[i]) + ' ' + str(h[i]) + '\n'
+
+    file1.write(string1)
+    file2.write(string2)
+
     s1.append(math.sqrt(c[i]**2 + d[i]**2 + e[i]**2))
     s2.append(math.sqrt(f[i]**2 + g[i]**2 + h[i]**2))
+
+file1.close()
+file2.close()
 
 fig, axes = plt.subplots(nrows=2, ncols=4)
 ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7 = axes.flat
@@ -67,4 +80,5 @@ ax7.set_xticks(np.arange(-1*spin, spinD, tick))
 ax7.set_xlim(-1*spinD,spinD)
 
 plt.tight_layout()
-plt.savefig("/home/steven.reyes/public_html/ER10/py_inspinj/spinsDistr.png")
+#plt.savefig("/home/steven.reyes/public_html/ER10/py_inspinj/spinsDistr.png")
+plt.savefig("/home/steven.reyes/WWW/LSC/ER10/spinsDistr.png")
