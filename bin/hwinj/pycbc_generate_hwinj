@@ -171,6 +171,15 @@ parser.add_argument('--spin2y', type=float, default=0.0,
 parser.add_argument('--spin2x', type=float, default=0.0,
                     help='(optional) Spin in x direction for mass2.')
 
+# waveform eccentricity
+parser.add_argument('--eccentricity', type=float, default=None,
+                    help='(optional) Add the eccentricity of the orbital '
+                         'motion of the binary into the dynamics. Takes '
+                         'values between 0 (circular) and 1 (hyperbolic). '
+                         'WARNING: Giving this option will produce an XML '
+                         'file containing an eccentricity column. This file '
+                         'will not be readable by default methds.')
+
 # tidal options
 parser.add_argument('--lambda1', type=float, default=None,
                     help='(optional) Tidal lambda term for mass1.'
@@ -285,6 +294,11 @@ proc_id = utils.process.register_to_xmldoc(
 # create sim_inspiral row for injection
 # and populate non-IFO-specific columns in XML output file
 
+# If using eccentricity, some hacking is currently needed. Hopefully this can
+# be resolved in the future by using HDF injection files!
+if opts.eccentricity is not None:
+    lsctables.SimInspiralTable.validcolumns['eccentricity'] = 'real_4'
+
 # If using tidal terms some hacking is currently needed. Hopefully this can
 # be resolved in the future by using HDF injection files!
 if opts.lambda1 is not None:
@@ -332,6 +346,9 @@ if opts.dquad_mon1 is not None:
     sim.dquad_mon1 = opts.dquad_mon1
 if opts.dquad_mon2 is not None:
     sim.dquad_mon2 = opts.dquad_mon2
+if opts.eccentricity is not None:
+    sim.eccentricity = opts.eccentricity
+
 sim.polarization = opts.polarization
 sim.taper = opts.taper
 sim.distance = distance
