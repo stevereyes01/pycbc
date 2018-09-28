@@ -23,7 +23,6 @@
 #
 """Provides I/O support for multi-tempered sampler.
 """
-
 from __future__ import absolute_import
 import argparse
 from .base_mcmc import MCMCIO
