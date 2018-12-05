@@ -109,12 +109,11 @@ class TestDistributions(unittest.TestCase):
                 samples = dist.rvs(n_samples)[param]
 
                 # get the PDF
-                x = numpy.arange(hist_min, hist_max, step)
-                pdf = numpy.array([dist.pdf(**{param : xx}) for xx in x])
+                pdf = numpy.array([dist.pdf(**{param : xx}) for xx in samples])
 
                 # compute the KL divergence and check if below threshold
-                kl_val = entropy.kl(samples, pdf, bins=pdf.size, pdf2=True,
-                                    hist_min=hist_min, hist_max=hist_max)
+                kl_val = entropy.kl(samples, pdf, pdf2=True,
+                                    x_min=hist_min, x_max=hist_max)
                 if not (kl_val < threshold):
                     raise ValueError(
                               "Class {} KL divergence is {} which is "
