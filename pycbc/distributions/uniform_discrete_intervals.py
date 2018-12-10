@@ -17,7 +17,7 @@ class UniformIntervals(bounded.BoundedDist):
         self._width = dict([[p.split("_width")[0], params.pop(p)] for p in width_args])
 
         uni_distr_obj = super(UniformIntervals, self).__init__(**params)
-        missing = set(self._stride.keys(), self._width.keys()) - set(params.keys())
+        missing = set(self._stride.keys()) - set(params.keys())
 
         if any(missing):
             raise ValueError("stride provided for unknown params {}".format(
@@ -25,20 +25,30 @@ class UniformIntervals(bounded.BoundedDist):
         self._stride.update(dict([[p, 0.]
             for p in params if p not in self._stride]))
 
+        missing = set(self._width.keys()) - set(params.keys())
+        if any(missing):
+            raise ValueError("stride provided for unknown params {}".format(
+                             ', '.join(missing)))
         self._width.update(dict([[p, 0.]
             for p in params if p not in self._width]))
 
     @property
     def norm(self, size=1):
-        return size * self._norm
+        raise NotImplementedError("Not well-defined")
+        return 1.0
 
     @property
     def lognorm(self, size=1):
-        return numpy.log(norm(size=size))
+        raise NotImplementedError("Not well-defined")
+        return 0.0 
 
     @property
     def stride(self):
         return self._stride
+
+    @property
+    def width(self):
+        return self._width
 
     def _pdf(self, size=1, param=None, **kwargs):
         """Returns the pdf at the given values. The keyword arguments must
@@ -88,7 +98,10 @@ class UniformIntervals(bounded.BoundedDist):
             arr[p] = numpy.random.uniform(a, b) 
 
         for (p_) in dtype:
-            if arr[p] > self.bounds[p][1]:
+            if numpy.any(arr[p] > self.bounds[p][1]):
+                print numpy.where(arr[p] > self.bounds[p][1])[0]
+                print arr[p][arr[p] > self.bounds[p][1]]
+                print self.bounds[p][1]
                 raise UserWarning("Caution, some samples lie beyond the bounds. Select different " \
                                   + "stride, width, number of samples, or bounds.")
 
