@@ -18,6 +18,9 @@ import logging
 import numpy
 from pycbc.io import record
 
+# distributions to exclude from constraint test with 1e6 samples
+EXCLUDE_VAR_ARG_NAMES = ["tc"]
+
 class JointDistribution(object):
     """
     Callable class that calculates the joint distribution built from a set of
@@ -71,7 +74,26 @@ class JointDistribution(object):
 
     def __init__(self, variable_args, *distributions, **kwargs):
 
-        # store the names of the parameters defined in the distributions
+        # Don't sample 1e6 for those distributions that shouldn't
+        # be sampled more than the requested samples.
+        for v_arg in variable_args:
+            if v_arg in EXCLUDE_VAR_ARG_NAMES:
+                idx = variable_args.index(v_arg)
+                variable_args.remove(variable_args[idx])
+
+        # We need to remove any distributions that aren't going to be
+        # resampled for constraints. This is a special case for
+        # time interval distributions since it is not a proper
+        # distribution.
+        new_tuple = []
+        for dist in distributions:
+            for params in EXCLUDE_VAR_ARG_NAMES:
+                for dist_params in dist.params:
+                    if not dist_params == params:
+                        new_tuple.append(dist)
+        distributions = tuple(new_tuple)
+
+        # store the names of the parameters defined in the distributions 
         self.variable_args = tuple(variable_args)
 
         # store the distributions
