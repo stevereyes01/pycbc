@@ -129,8 +129,8 @@ class Arbitrary(bounded.BoundedDist):
         if kwargs not in self:
             return -numpy.inf
         else:
-            if self._pdf(**kwargs) <= 0.0:
-                return -numpy.inf
+#            if self._pdf(**kwargs) <= 0.0:
+#                return -numpy.inf
             return numpy.log(self._pdf(**kwargs))
 
     def set_bandwidth(self, set_bw="scott"):
