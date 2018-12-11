@@ -74,25 +74,6 @@ class JointDistribution(object):
 
     def __init__(self, variable_args, *distributions, **kwargs):
 
-        # Don't sample 1e6 for those distributions that shouldn't
-        # be sampled more than the requested samples.
-        for v_arg in variable_args:
-            if v_arg in EXCLUDE_VAR_ARG_NAMES:
-                idx = variable_args.index(v_arg)
-                variable_args.remove(variable_args[idx])
-
-        # We need to remove any distributions that aren't going to be
-        # resampled for constraints. This is a special case for
-        # time interval distributions since it is not a proper
-        # distribution.
-        new_tuple = []
-        for dist in distributions:
-            for params in EXCLUDE_VAR_ARG_NAMES:
-                for dist_params in dist.params:
-                    if not dist_params == params:
-                        new_tuple.append(dist)
-        distributions = tuple(new_tuple)
-
         # store the names of the parameters defined in the distributions 
         self.variable_args = tuple(variable_args)
 
@@ -190,6 +171,13 @@ class JointDistribution(object):
         out = record.FieldArray(size, dtype=[(arg, float)
                                     for arg in self.variable_args])
 
+        params_to_exclude = []
+        vals_drawn = []
+        for dist in self.distributions:
+            for param in dist.params:
+                if param in EXCLUDE_VAR_ARG_NAMES:
+                    vals_drawn.append(dist.rvs(size))
+
         # loop until enough samples accepted
         n = 0
         while n < size:
@@ -209,4 +197,3 @@ class JointDistribution(object):
                 n += 1
 
         return out
-

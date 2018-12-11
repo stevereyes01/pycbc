@@ -1,6 +1,7 @@
 import numpy
 from pycbc.distributions import uniform
 from pycbc.distributions import bounded
+import warnings
 
 class UniformIntervals(bounded.BoundedDist):
     name = 'uniform_intervals'
@@ -55,8 +56,8 @@ class UniformIntervals(bounded.BoundedDist):
         contain all of parameters in self's params. Unrecognized arguments are
         ignored.
         """
-        err_str = "The pdf of this distribution is not well defined! Returning 1.0."
-        raise NotImplementedError(err_str)
+#        err_str = "The pdf of this distribution is not well defined! Returning 1.0."
+#        raise NotImplementedError(err_str)
         return 1.0
 
     def _logpdf(self, size=1, **kwargs):
@@ -64,8 +65,8 @@ class UniformIntervals(bounded.BoundedDist):
         arguments must contain all of parameters in self's params. Unrecognized
         arguments are ignored.
         """
-        err_str = "The log pdf of this distribution is not well defined! Returning 0.0."
-        raise NotImplementedError(err_str)
+#        err_str = "The log pdf of this distribution is not well defined! Returning 0.0."
+#        raise NotImplementedError(err_str)
         return 0.0
 
     def rvs(self, size=1, param=None):
@@ -91,6 +92,7 @@ class UniformIntervals(bounded.BoundedDist):
             dtype = [(p, float) for p in self.params]
 
         arr = numpy.zeros(size, dtype=dtype)
+ 
         for (p,_) in dtype:
             x = numpy.arange(0, size, 1)
             b = self.bounds[p][0] + self.stride[p] * x + self.width[p]
@@ -99,11 +101,8 @@ class UniformIntervals(bounded.BoundedDist):
 
         for (p_) in dtype:
             if numpy.any(arr[p] > self.bounds[p][1]):
-                print numpy.where(arr[p] > self.bounds[p][1])[0]
-                print arr[p][arr[p] > self.bounds[p][1]]
-                print self.bounds[p][1]
-                raise UserWarning("Caution, some samples lie beyond the bounds. Select different " \
-                                  + "stride, width, number of samples, or bounds.")
+                warnings.warn("Caution, some samples lie beyond the bounds. Select different " \
+                              + "stride, width, number of samples, or bounds.")
 
         return arr
 
