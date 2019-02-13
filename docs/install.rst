@@ -166,11 +166,13 @@ Enter the virtual environment that you wish to use for PyCBC development by sour
 It is recommended that you install lalsuite into your virtual environment with the commands:
 
 .. code-block:: bash
+
       pip install lalsuite 
 
 or
 
 .. code-block:: bash
+
       pip install lalsuite==6.48.1.dev20180717 
 
 for this particular version of lalsuite. Other versions of lalsuite can be found `here <https://pypi.org/project/lalsuite/#history>_`.
