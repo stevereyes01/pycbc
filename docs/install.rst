@@ -12,14 +12,27 @@ PyCBC is available through the PyPI. For straightforward use of the PyCBC librar
 and executables, we recommend installing with the following command. If you 
 are not running in a specialized computing environment, this is probably the
 appropriate thing to do. Note, that at this time, PyCBC supports Python2. Python3
-support is under development.
+support is under development. To install the latest development build of PyCBC
+with the latest development build of `lalsuite` you can simply run the command:
 
 .. code-block:: bash
     
     pip install lalsuite pycbc
     
 PyCBC depends on `lalsuite` for a lot of functionality, however, if you are
-getting lalsuite through another means, you may ommit this part of the command.
+getting `lalsuite` through another means, you may ommit this part of the command.
+
+To install a tagged release version of PyCBC and specific branches of lalsuite you
+can use the `pip version specifier <https://packaging.python.org/glossary/#term-version-specifier>`_.
+For example you can run the command:
+.. code-block:: bash
+   pip install lalsuite==6.48.1.dev20180717 
+   pip install pycbc==1.13.3
+to install a particular branch of lalsuite and `v1.13.3` of PyCBC. See 
+`lalsuite release tags <https://pypi.org/project/lalsuite/#history>_` and `PyCBC release tags <https://pypi.org/project/PyCBC/#history>_` for versions available through `PyPI <https://pypi.org/>_`.
+
+It is recommended that new users of PyCBC create a virtual environment prior to installing
+PyCBC and lalsuite. See the instructions below.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Full Virtualenv for Development and Production
@@ -28,7 +41,7 @@ Full Virtualenv for Development and Production
 The following instructions are appropriate for development use on LDG clusters, 
 and goes through some special case scenarios appropriate for these environments
 as they generally contain older reference operating systems. Other users may find
-useful tips here, but in most cases, we suggest using the simpler instructions.
+useful tips here, but in most cases, we **suggest** using the simpler instructions.
 
 This document explains how to set up a virtual environment to install PyCBC
 either for development or use in a production analysis with a release. The
@@ -87,13 +100,13 @@ Unset your current ``PYTHONPATH`` so that you do not inherit any packages that m
 
     unset PYTHONPATH
 
-By default, virtualenv will modify your shell prompt so that it prepends the name of the virtual environment. This can be very useful to make sure that you are developing in the virtual environment, or if you have several virtual environments, so it is not recommended to disable this. However, if you do not want your prompt changed, then you can set
+By default, virtualenv will modify your shell prompt so that it prepends the name of the virtual environment. This can be very useful to make sure that you are developing in the virtual environment, or if you have several virtual environments. Disabling this prompt is **not recommended** but if you do want to disable it, you can set
 
 .. code-block:: bash
 
     VIRTUAL_ENV_DISABLE_PROMPT=True
     
-Before running the command to create the new virtual environment.
+before running the command to create the new virtual environment.
 
 Next, you need to choose a directory name where you'd like to make your virtual environment, and then make it. In this example, we use ``${HOME}/pycbc-dev`` but this can be changed to any path that you you have write access to, except for ``${HOME}/.local`` as that will cause conflicts with pip.
 
@@ -146,6 +159,20 @@ Enter the virtual environment that you wish to use for PyCBC development by sour
 .. code-block:: bash
 
     source ~/src/pycbc/bin/activate
+
+It is recommended that you install lalsuite into your virtual environment with the commands:
+
+.. code-block:: bash
+      pip install lalsuite 
+
+or
+
+.. code-block:: bash
+      pip install lalsuite==6.48.1.dev20180717 
+
+for this particular version of lalsuite. Other versions of lalsuite can be found `here <https://pypi.org/project/lalsuite/#history>_`.
+The following commands are for other users who may want to conduct development in lalsuite
+as well as PyCBC or who may want a custom lalsuite versions.
 
 .. note::
 
@@ -235,6 +262,9 @@ Releases of PyCBC are available from the `PyPi PyCBC page <https://pypi.python.o
     pip install PyCBC
 
 To install an older version, use the `pip version specifier <https://packaging.python.org/glossary/#term-version-specifier>`_.
+For example, this could be done for PyCBC v1.13.3 via the command:
+.. code-block:: bash
+    pip install pycbc==1.13.3
 
 To install a release of the code from GitHub, determine the tag of the release that you want to install from the `list of PyCBC tags <https://github.com/ligo-cbc/pycbc/tags>`_. This example installs the v1.1.0 release. If you want to install a different release, change the command below accordingly:
 
@@ -285,7 +315,7 @@ To build and install any changes that you make to the source code in your virtua
 
 .. code-block:: bash
 
-    python setup.py install
+    pip install .
     
 from the PyCBC source directory in ``${VIRTUAL_ENV}/src/pycbc``
 
