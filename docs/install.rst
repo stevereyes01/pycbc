@@ -262,6 +262,9 @@ Releases of PyCBC are available from the `PyPi PyCBC page <https://pypi.python.o
     pip install PyCBC
 
 To install an older version, use the `pip version specifier <https://packaging.python.org/glossary/#term-version-specifier>`_.
+For example, this could be done for PyCBC v1.13.3 via the command:
+.. code-block:: bash
+    pip install pycbc==1.13.3
 
 To install a release of the code from GitHub, determine the tag of the release that you want to install from the `list of PyCBC tags <https://github.com/ligo-cbc/pycbc/tags>`_. This example installs the v1.1.0 release. If you want to install a different release, change the command below accordingly:
 
