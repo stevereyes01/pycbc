@@ -1,0 +1,33 @@
+.. _inheritance-io-emcee_file:
+
+* ``emcee_file``:
+
+.. inheritance-diagram:: pycbc.inference.io.emcee.EmceeFile
+   :parts: 3
+   :top-classes: pycbc.inference.io.base_hdf.BaseInferenceFile
+
+|
+
+
+.. _inheritance-io-emcee_pt_file:
+
+* ``emcee_pt_file``:
+
+.. inheritance-diagram:: pycbc.inference.io.emcee_pt.EmceePTFile
+   :parts: 3
+   :top-classes: pycbc.inference.io.base_hdf.BaseInferenceFile
+
+|
+
+
+.. _inheritance-io-posterior_file:
+
+* ``posterior_file``:
+
+.. inheritance-diagram:: pycbc.inference.io.posterior.PosteriorFile
+   :parts: 3
+   :top-classes: pycbc.inference.io.base_hdf.BaseInferenceFile
+
+|
+
+

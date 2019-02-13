@@ -1,0 +1,20 @@
+.. _inheritance-emcee:
+
+* ``emcee``:
+
+.. inheritance-diagram:: pycbc.inference.sampler.emcee.EmceeEnsembleSampler
+   :parts: 3
+
+|
+
+
+.. _inheritance-emcee_pt:
+
+* ``emcee_pt``:
+
+.. inheritance-diagram:: pycbc.inference.sampler.emcee_pt.EmceePTSampler
+   :parts: 3
+
+|
+
+

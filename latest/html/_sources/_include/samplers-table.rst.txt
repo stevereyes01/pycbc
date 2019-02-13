@@ -1,0 +1,6 @@
+==============  ==============================================================
+Name            Class
+==============  ==============================================================
+``'emcee'``     :py:class:`pycbc.inference.sampler.emcee.EmceeEnsembleSampler`
+``'emcee_pt'``  :py:class:`pycbc.inference.sampler.emcee_pt.EmceePTSampler`
+==============  ==============================================================
