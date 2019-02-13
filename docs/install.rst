@@ -25,9 +25,11 @@ getting `lalsuite` through another means, you may ommit this part of the command
 To install a tagged release version of PyCBC and specific branches of lalsuite you
 can use the `pip version specifier <https://packaging.python.org/glossary/#term-version-specifier>`_.
 For example you can run the command:
+
 .. code-block:: bash
-   pip install lalsuite==6.48.1.dev20180717 
-   pip install pycbc==1.13.3
+    pip install lalsuite==6.48.1.dev20180717 
+    pip install pycbc==1.13.3
+
 to install a particular branch of lalsuite and `v1.13.3` of PyCBC. See 
 `lalsuite release tags <https://pypi.org/project/lalsuite/#history>_` and `PyCBC release tags <https://pypi.org/project/PyCBC/#history>_` for versions available through `PyPI <https://pypi.org/>_`.
 
