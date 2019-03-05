@@ -21,8 +21,10 @@ packages for parameter estimation.
 
 from __future__ import absolute_import
 
+from ConfigParser import NoOptionError 
 import numpy
 import emcee
+import h5py
 import logging
 from pycbc.pool import choose_pool
 
@@ -53,13 +55,16 @@ class EmceePTSampler(MultiTemperedAutocorrSupport, MultiTemperedSupport,
         A provider of a map function that allows a function call to be run
         over multiple sets of arguments and possibly maps them to
         cores/nodes/etc.
+    betas_file : str
+        A file path if the user wants a custom temperature ladder. 
     """
     name = "emcee_pt"
     _io = EmceePTFile
     burn_in_class = MultiTemperedMCMCBurnInTests
 
     def __init__(self, model, ntemps, nwalkers, checkpoint_interval=None,
-                 loglikelihood_function=None, nprocesses=1, use_mpi=False):
+                 loglikelihood_function=None, nprocesses=1, use_mpi=False,
+                 betas_file=None):
 
         self.model = model
 
@@ -86,9 +91,24 @@ class EmceePTSampler(MultiTemperedAutocorrSupport, MultiTemperedSupport,
 
         # construct the sampler: PTSampler needs the likelihood and prior
         # functions separately
+
+        # Parse temperature ladder options and other dimensionality choices
+        if betas_file:
+            with h5py.File(betas_file, "r") as file_path:
+                try:
+                    betas = file_path.attrs["betas"]
+                    ntemps = betas.shape[0]
+
+                except KeyError:
+                    raise AttributeError("No attribute named betas found in file.")
+
+        else:
+            betas = None
+
         ndim = len(model.variable_params)
         self._sampler = emcee.PTSampler(ntemps, nwalkers, ndim,
-                                        model_call, prior_call, pool=pool)
+                                        model_call, prior_call, pool=pool,
+                                        betas=betas)
         self._nwalkers = nwalkers
         self._ntemps = ntemps
         self._checkpoint_interval = checkpoint_interval
@@ -114,8 +134,22 @@ class EmceePTSampler(MultiTemperedAutocorrSupport, MultiTemperedSupport,
             "name in section [sampler] must match mine")
         # get the number of walkers to use
         nwalkers = int(cp.get(section, "nwalkers"))
-        # get the number of temps
-        ntemps = int(cp.get(section, "ntemps"))
+
+        
+        try:
+            betas_file = cp.get(section, "inverse-temperature-file")
+            try:
+                ntemps = int(cp.get(section, "ntemps"))
+                raise IOError("Must specify either ntemps or "
+                             "inverse-temperature-file, not both.")
+            except NoOptionError:
+                ntemps = None
+
+        except NoOptionError:
+            # get the number of temps
+            ntemps = int(cp.get(section, "ntemps"))
+            betas_file = None
+
         # get the checkpoint interval, if it's specified
         checkpoint_interval = cls.checkpoint_from_config(cp, section)
         # get the loglikelihood function
@@ -123,7 +157,7 @@ class EmceePTSampler(MultiTemperedAutocorrSupport, MultiTemperedSupport,
         obj = cls(model, ntemps, nwalkers,
                   checkpoint_interval=checkpoint_interval,
                   loglikelihood_function=logl, nprocesses=nprocesses,
-                  use_mpi=use_mpi)
+                  use_mpi=use_mpi, betas_file=betas_file)
         # set target
         obj.set_target_from_config(cp, section)
         # add burn-in if it's specified
