@@ -136,6 +136,9 @@ class Arbitrary(bounded.BoundedDist):
     def set_bandwidth(self, set_bw="scott"):
         self._kde.set_bandwidth(set_bw)
 
+    def get_bandwidth(self):
+        return float(self._kde.factor)
+
     def rvs(self, size=1, param=None):
         """Gives a set of random values drawn from the kde.
 
