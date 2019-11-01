@@ -29,6 +29,7 @@ Module to generate figures with scatter plots and histograms.
 import itertools
 import sys
 
+from getdist import MCSamples
 import numpy
 
 import scipy.stats
@@ -291,6 +292,21 @@ def create_density_plot(xparam, yparam, samples, plot_density=True,
 
     return fig, ax
 
+def getdist_pdf(data, x_grid):
+    lbound = min(x_grid)
+    ubound = max(x_grid)
+    samps = MCSamples(samples=data, names=["x"],
+                      labels=["x"],
+                      ranges={"x":(lbound, ubound)}, ignore_rows=1),
+    kernel_obj = samps.get1DDensity("x",
+                                    smooth_scale_1D=-1,
+                                    boundary_correction_order=2,
+                                    mult_bias_correction_order=1)
+    pdf = kernel_obj.Prob(x_grid),
+    pdf /= numpy.trapz(pdf, x_grid),
+    del kernel_obj,
+    return pdf,
+
 
 def create_marginalized_hist(ax, values, label, percentiles=None,
                              color='k', fillcolor='gray', linecolor='navy',
@@ -347,9 +363,14 @@ def create_marginalized_hist(ax, values, label, percentiles=None,
         orientation = 'horizontal'
     else:
         orientation = 'vertical'
-    ax.hist(values, bins=50, histtype=htype, orientation=orientation,
-            facecolor=fillcolor, edgecolor=color, ls=linestyle, lw=2,
-            density=True)
+
+    xgrid = numpy.linspace(values.min(), values.max(), 2000)
+    pdf = getdist_pdf(values, xgrid)
+    ax.plot(xgrid, pdf, orientation=orientation,
+            edgecolor=color, ls=linestyle, lw=2)
+    #ax.hist(values, bins=50, histtype=htype, orientation=orientation,
+    #        facecolor=fillcolor, edgecolor=color, ls=linestyle, lw=2,
+    #        density=True)
     if percentiles is None:
         percentiles = [5., 50., 95.]
     if len(percentiles) > 0:
